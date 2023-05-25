@@ -8,7 +8,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar,  } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import { Box } from "@chakra-ui/react";
 import PropTypes from "prop-types";
 
@@ -71,12 +71,7 @@ const LineGraph = ({ data }) => {
   }
 
   return (
-    <Box
-      border="1px solid teal"
-      borderRadius="10px"
-      w="50%"
-      m="auto"
-    >
+    <Box border="1px solid teal" borderRadius="10px" w="50%" m="auto">
       <Bar data={LineData} options={options} />
     </Box>
   );
