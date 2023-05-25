@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useState } from "react";
-import { Box, Heading, Button, Text, Select } from "@chakra-ui/react";
+import { Box, Heading, Text, Select } from "@chakra-ui/react";
 
 import {
   Chart as ChartJS,
@@ -17,11 +17,12 @@ import LineGraph from "../Components/Graph/LineGraph";
 ChartJS.register(BarElement, Tooltip, Legend, CategoryScale, LinearScale);
 
 const Dashboard = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({});
   const [page, setPage] = useState(1);
   const [selectedTopic, setSelectedTopic] = useState("");
   const [selectedPestle, setSelectedPestle] = useState("");
   const [selectedAdded, setSelectedAdded] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
 
   let URL = `https://blackcoffer-server-production.up.railway.app`;
 
@@ -36,8 +37,8 @@ const Dashboard = () => {
     axios
       .get(`${URL}/data?`, { params })
       .then((res) => {
-        console.log(res.data);
         setData(res.data);
+        setFilteredData(res.data.data);
       })
       .catch((err) => console.log(err));
   }, [page, selectedTopic, selectedPestle, selectedAdded]);
@@ -52,6 +53,26 @@ const Dashboard = () => {
   const handleAddedChange = (event) => {
     setSelectedAdded(event.target.value);
   };
+
+  useEffect(() => {
+    // Apply filters when the data or filter options change
+    const filteredResults = (data.data ?? []).filter((el) => {
+      // Apply selectedTopic filter
+      if (selectedTopic && el.topic !== selectedTopic) {
+        return false;
+      }
+      // Apply selectedPestle filter
+      if (selectedPestle && el.pestle !== selectedPestle) {
+        return false;
+      }
+      // Apply selectedAdded filter
+      if (selectedAdded && el.added !== selectedAdded) {
+        return false;
+      }
+      return true; // Include the data in the filtered results
+    });
+    setFilteredData(filteredResults);
+  }, [data, selectedTopic, selectedPestle, selectedAdded]);
 
   return (
     <>
@@ -81,7 +102,7 @@ const Dashboard = () => {
                   .filter(
                     (el) => el.topic === selectedTopic || selectedTopic === ""
                   )
-                  .map((el) => <option key={el.id}>{el.topic}</option>)}
+                  .map((el) => <option key={el._id}>{el.topic}</option>)}
             </Select>
             <Select
               placeholder="Select Pestle"
@@ -95,7 +116,7 @@ const Dashboard = () => {
                     (el) =>
                       el.pestle === selectedPestle || selectedPestle === ""
                   )
-                  .map((el) => <option key={el.id}>{el.pestle}</option>)}
+                  .map((el) => <option key={el._id}>{el.pestle}</option>)}
             </Select>
             <Select
               placeholder="Select Added"
@@ -107,7 +128,7 @@ const Dashboard = () => {
                   .filter(
                     (el) => el.added === selectedAdded || selectedAdded === ""
                   )
-                  .map((el) => <option key={el.id}>{el.added}</option>)}
+                  .map((el) => <option key={el._id}>{el.added}</option>)}
             </Select>
           </Box>
           <table>
@@ -122,10 +143,10 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {data.data &&
-                data.data.map((item) => {
+              {filteredData &&
+                filteredData.map((item) => {
                   return (
-                    <tr key={item.id}>
+                    <tr key={item._id}>
                       <td>{item.added}</td>
                       <td>{item.country}</td>
                       <td>{item.insight}</td>
@@ -145,15 +166,17 @@ const Dashboard = () => {
             padding="10px"
             gap="5px"
           >
-            <Button colorScheme="teal">
-              <button onClick={() => setPage(page - 1)} disabled={page == 1}>
-                Prev
-              </button>
-            </Button>
+            <button
+              className="prev"
+              onClick={() => setPage(page - 1)}
+              disabled={page == 1}
+            >
+              Prev
+            </button>
             <Text fontWeight="bold">{page}</Text>
-            <Button colorScheme="teal" onClick={() => setPage(page + 1)}>
+            <button className="prev" onClick={() => setPage(page + 1)}>
               Next
-            </Button>
+            </button>
           </Box>
         </Box>
       </Box>
